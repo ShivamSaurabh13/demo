@@ -1,0 +1,1 @@
+cmd_/home/ee212899/Desktop/playgroud/LKD/Module.symvers := sed 's/\.ko$$/\.o/' /home/ee212899/Desktop/playgroud/LKD/modules.order | scripts/mod/modpost -m -a  -o /home/ee212899/Desktop/playgroud/LKD/Module.symvers -e -i Module.symvers   -T -
