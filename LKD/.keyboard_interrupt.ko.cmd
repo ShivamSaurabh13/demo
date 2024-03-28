@@ -1,0 +1,1 @@
+cmd_/home/ee212899/Desktop/playgroud/LKD/keyboard_interrupt.ko := ld -r  -m elf_x86_64  --build-id=sha1  -T scripts/module.lds -o /home/ee212899/Desktop/playgroud/LKD/keyboard_interrupt.ko /home/ee212899/Desktop/playgroud/LKD/keyboard_interrupt.o /home/ee212899/Desktop/playgroud/LKD/keyboard_interrupt.mod.o;  true

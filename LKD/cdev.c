@@ -1,120 +1,89 @@
+
 #include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/kdev_t.h>
 #include <linux/module.h>
-#include <linux/fs.h>
-#include <linux/err.h>
-#include <linux/device.h>
 #include <linux/cdev.h>
+#include <linux/fs.h>
+#include <linux/device.h>
 
+dev_t dev =0;
+static struct class *sh_class;
+static struct cdev sh_cdev;
 
-dev_t dev = 0;
-struct class *dev_class;
-struct cdev cdev_hai;
-
-static int __init hello_world_init(void);
-static void __exit hello_world_exit(void);
-static int open_kro(struct inode *inode,struct file *file);
-static int release_kro(struct inode *inode, struct file *file);
-static ssize_t read_kro(struct file *filp, char __user *buff, size_t len, loff_t *off);
-static ssize_t write_kro(struct file *filp,const char __user *buff, size_t len, loff_t *off);
-
-
-struct file_operations fops = {
-	.owner = THIS_MODULE,
-	.read = read_kro,
-	.write = write_kro,
-	.open = open_kro,
-	.release = release_kro,
-};
-
-static int open_kro(struct inode *inode, struct file *file){
-	pr_info("Driver open : Shivam re");
+//function definition
+int sh_open(struct inode *inode, struct file *filp){
+	pr_info("opening the the cdev\n");
 	return 0;
 }
 
-static int release_kro(struct inode *inode, struct file *file){
-	pr_info("Driver close: shivam ja");	
+int sh_release(struct inode *inode, struct file *filp){
+	pr_info("releasing the file\n");
 	return 0;
 }
 
-ssize_t read_kro(struct file *filp,char __user *buff,size_t len,loff_t *off){
-	pr_info("Driver read call: shivam sunna");
+ssize_t sh_read(struct file *filp, char __user *buf, size_t len, loff_t *off){
+	pr_info("reading file opened\n");
 	return 0;
 }
 
-ssize_t write_kro(struct file *filp,const char __user *buff, size_t len, loff_t *off){
-	pr_info("Driver write call: shivam kuch sunna");
+ssize_t sh_write(struct file *filp, const char __user *buf, size_t len, loff_t *off){
+	pr_info("Writting to the file\n");
 	return len;
 }
 
+static struct file_operations fops = {
+	.owner = THIS_MODULE,
+	.read = sh_read,
+	.write = sh_write,
+	.open = sh_open,
+	.release = sh_release,
+};
 
 
-
-
-
-int __init hello_world_init(void){
-	
-	dev = alloc_chrdev_region(&dev,0,1,"Shivam_major");
-	if(dev < 0){
-		pr_err("allocation major");
+static int __init hello_init(void){
+	if((alloc_chrdev_region(&dev,0,1,"Shiva"))<0){
+		pr_err("allocation of major and minor allocation");
 		return -1;
 	}
-
-	cdev_init(&cdev_hai,&fops);
+	pr_info("Major = %d Minor = %d\n",MAJOR(dev),MAJOR(dev));
 	
-	if(cdev_add(&cdev_hai,dev,1) < 0){
-		pr_err("Cannot add the device  to the system\n");
-		goto err_class;	
-	}
-
-	dev_class = class_create(THIS_MODULE,"SHIVAM_CLASS");
-	if(IS_ERR(dev_class)){
-		pr_err("Class creation error");
+	cdev_init(&sh_cdev,&fops);
+	
+	if((cdev_add(&sh_cdev,dev,1)) < 0){
+		pr_err("Cannot add the device to the system\n");
 		goto err_class;
 	}
-		
-	if(IS_ERR((device_create(dev_class,NULL,dev,NULL,"shivam_device")))){
-		pr_err("device creation error");
-		goto err_device;	
+	
+	if(IS_ERR(sh_class=class_create(THIS_MODULE,"shiva_ka_class"))){
+		pr_err("Cannot create the struct class\n");
+		goto err_class;
 	}
-	pr_info("Kernel module INSERTED successfully\n");
+	if((IS_ERR(device_create(sh_class,NULL,dev,NULL,"shiva_ka_device")))){
+		pr_err("Cannot create the device class\n");
+		goto err_device;
+	}
+	pr_info("The init function is working\n");
 	return 0;
-err_device:
-	class_destroy(dev_class);
-err_class:
-	unregister_chrdev_region(dev,1);
-
-	return -1;	
+err_device:class_destroy(sh_class);
+err_class:unregister_chrdev_region(dev,1);
+return -1;
 }
 
+static void __exit hello_exit(void){
 
-
-
-static void __exit hello_world_exit(void){
-	device_destroy(dev_class,dev);
-	class_destroy(dev_class);
-	cdev_del(&cdev_hai);
+	device_destroy(sh_class,dev);
+	class_destroy(sh_class);
+	cdev_del(&sh_cdev);
 	unregister_chrdev_region(dev,1);
-	pr_info("Kernel Module removed successfully");
-
+	pr_info("The exit function is called\n");
+	
 }
 
-module_init(hello_world_init);
-module_exit(hello_world_exit);
-
-
-
+module_init(hello_init);
+module_exit(hello_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Shivam Saurabh");
-MODULE_DESCRIPTION("CREATING THE DEVICE FILE");
-
-
-
-
-
-
-
-
+MODULE_AUTHOR("shiva");
+MODULE_DESCRIPTION("Simple");
+MODULE_VERSION("1.1");
 

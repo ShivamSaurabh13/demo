@@ -1,4 +1,4 @@
-obj-m := cdev.o
+obj-m := keyboard_interrupt.o
 
 KDIR= /lib/modules/$(shell uname -r)/build
 
